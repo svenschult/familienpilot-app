@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   final List<String> tasks = const [
-    'Turnbeutel für Theo einpacken',
+    'Turnbeutel einpacken',
     'Müll rausstellen',
     'Wäsche aus der Maschine holen',
   ];
@@ -65,7 +65,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-
           InfoCard(
             title: 'Aufgaben',
             icon: Icons.check_circle_outline,
@@ -79,9 +78,7 @@ class HomeScreen extends StatelessWidget {
                 )
                 .toList(),
           ),
-
           const SizedBox(height: 16),
-
           InfoCard(
             title: 'Einkauf',
             icon: Icons.shopping_cart_outlined,
@@ -95,9 +92,7 @@ class HomeScreen extends StatelessWidget {
                 )
                 .toList(),
           ),
-
           const SizedBox(height: 16),
-
           const InfoCard(
             title: 'Essen heute',
             icon: Icons.restaurant_menu,
