@@ -23,21 +23,159 @@ class FamilienPilotApp extends StatelessWidget {
   }
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  final List<String> tasks = const [
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final List<String> tasks = [
     'Turnbeutel einpacken',
     'Müll rausstellen',
     'Wäsche aus der Maschine holen',
   ];
 
-  final List<String> shoppingItems = const [
+  final List<String> shoppingItems = [
     'Brot',
     'Milch',
     'Windeln',
     'Äpfel',
   ];
+
+  String todayMeal = 'Gebratener Reis mit Gemüse';
+
+  void _openAddMenu() {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Was möchtest du hinzufügen?',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.check_circle_outline),
+                title: const Text('Aufgabe hinzufügen'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showTextInputDialog(
+                    title: 'Neue Aufgabe',
+                    hintText: 'z. B. Turnbeutel einpacken',
+                    onSave: (value) {
+                      setState(() {
+                        tasks.add(value);
+                      });
+                    },
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.shopping_cart_outlined),
+                title: const Text('Einkauf hinzufügen'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showTextInputDialog(
+                    title: 'Neuer Einkaufspunkt',
+                    hintText: 'z. B. Milch',
+                    onSave: (value) {
+                      setState(() {
+                        shoppingItems.add(value);
+                      });
+                    },
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.restaurant_menu),
+                title: const Text('Essen heute ändern'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showTextInputDialog(
+                    title: 'Essen heute',
+                    hintText: 'z. B. Nudeln mit Gemüse',
+                    onSave: (value) {
+                      setState(() {
+                        todayMeal = value;
+                      });
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showTextInputDialog({
+    required String title,
+    required String hintText,
+    required void Function(String value) onSave,
+  }) {
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: InputDecoration(
+              hintText: hintText,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Abbrechen'),
+            ),
+            FilledButton(
+              onPressed: () {
+                final value = controller.text.trim();
+
+                if (value.isEmpty) {
+                  return;
+                }
+
+                onSave(value);
+                Navigator.pop(context);
+              },
+              child: const Text('Speichern'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteTask(int index) {
+    setState(() {
+      tasks.removeAt(index);
+    });
+  }
+
+  void _deleteShoppingItem(int index) {
+    setState(() {
+      shoppingItems.removeAt(index);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,50 +203,73 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+
           InfoCard(
             title: 'Aufgaben',
             icon: Icons.check_circle_outline,
-            children: tasks
-                .map(
-                  (task) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.circle_outlined),
-                    title: Text(task),
+            children: tasks.asMap().entries.map(
+              (entry) {
+                final index = entry.key;
+                final task = entry.value;
+
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.circle_outlined),
+                  title: Text(task),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () {
+                      _deleteTask(index);
+                    },
                   ),
-                )
-                .toList(),
+                );
+              },
+            ).toList(),
           ),
+
           const SizedBox(height: 16),
+
           InfoCard(
             title: 'Einkauf',
             icon: Icons.shopping_cart_outlined,
-            children: shoppingItems
-                .map(
-                  (item) => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.add_shopping_cart),
-                    title: Text(item),
+            children: shoppingItems.asMap().entries.map(
+              (entry) {
+                final index = entry.key;
+                final item = entry.value;
+
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.add_shopping_cart),
+                  title: Text(item),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    onPressed: () {
+                      _deleteShoppingItem(index);
+                    },
                   ),
-                )
-                .toList(),
+                );
+              },
+            ).toList(),
           ),
+
           const SizedBox(height: 16),
-          const InfoCard(
+
+          InfoCard(
             title: 'Essen heute',
             icon: Icons.restaurant_menu,
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.dinner_dining),
-                title: Text('Gebratener Reis mit Gemüse'),
-                subtitle: Text('Schnell, günstig und familientauglich'),
+                leading: const Icon(Icons.dinner_dining),
+                title: Text(todayMeal),
+                subtitle: const Text('Schnell, günstig und familientauglich'),
               ),
             ],
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: _openAddMenu,
         icon: const Icon(Icons.add),
         label: const Text('Hinzufügen'),
       ),
